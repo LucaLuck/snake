@@ -1,7 +1,6 @@
-from re import X
-from turtle import Screen, up
+import random
+import math
 import pgzrun
-import pygame
 
 
 # Global constants
@@ -22,8 +21,8 @@ BORDER_RIGHT = Rect((590, 0), (10, 400))
 
 
 # Global variables
-x = 400
-y = 300
+x = math.floor(random.randint(WIDTH / 5, 4 * WIDTH / 5) / UNIT_SIZE) * UNIT_SIZE
+y = math.floor(random.randint(HEIGHT / 5, 4 * HEIGHT / 5) / UNIT_SIZE) * UNIT_SIZE
 
 
 def draw():
