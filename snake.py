@@ -1,6 +1,5 @@
 import random
 import math
-from numpy import true_divide
 import pgzrun
 
 
@@ -40,6 +39,38 @@ x_food, y_food = random_food()
 print("Food at: ", x_food, y_food)
 
 score = 0
+x_speed = 0 
+y_speed = 0
+
+
+def updateStateOnClock():
+    global x_snake
+    global y_snake
+    global x_food, y_food, score
+
+    x_snake = x_snake + x_speed * UNIT_SIZE
+    y_snake = y_snake + y_speed * UNIT_SIZE
+
+    if y_snake <= UNIT_SIZE + 20 : # check this out! why 20 code review
+        y_snake = UNIT_SIZE + 20
+
+    if y_snake >= HEIGHT - 2 * UNIT_SIZE :
+        y_snake = HEIGHT - 2 * UNIT_SIZE
+
+    if x_snake <= UNIT_SIZE:
+        x_snake = UNIT_SIZE
+
+    if x_snake >= WIDTH - 2 * UNIT_SIZE :
+        x_snake = WIDTH - 2 * UNIT_SIZE
+
+    if x_snake == x_food and y_snake == y_food : 
+        score = score + 1
+        x_food, y_food = random_food(x_snake, y_snake)
+        print("New food at: ", x_food, y_food)
+
+    return
+
+clock.schedule_interval(updateStateOnClock, 0.1)
 
 def draw():
     # Fill background
@@ -70,27 +101,21 @@ def update() :
     global x_food
     global y_food
     global score
+    global x_speed
+    global y_speed
 
-    if  keyboard.up :
-        y_snake = y_snake - UNIT_SIZE
-        if y_snake <= UNIT_SIZE + 20 :
-            y_snake = UNIT_SIZE + 20
+    if keyboard.up :
+        x_speed = 0
+        y_speed = -1
     elif keyboard.down :
-        y_snake = y_snake + UNIT_SIZE
-        if y_snake >= HEIGHT - 2 * UNIT_SIZE :
-            y_snake = HEIGHT - 2 * UNIT_SIZE
+        x_speed = 0
+        y_speed = 1
     elif keyboard.left:
-        x_snake = x_snake - UNIT_SIZE
-        if x_snake <= UNIT_SIZE:
-            x_snake = UNIT_SIZE
+        x_speed = -1
+        y_speed = 0
     elif keyboard.right :
-        x_snake = x_snake + UNIT_SIZE
-        if x_snake >= WIDTH - 2 * UNIT_SIZE:
-            x_snake = WIDTH - 2 * UNIT_SIZE 
-    if x_snake == x_food and y_snake == y_food : 
-        score = score + 1
-        x_food, y_food = random_food(x_snake, y_snake)
-        print("New food at: ", x_food, y_food)
+        x_speed = 1
+        y_speed = 0
 
 pgzrun.go()
 
