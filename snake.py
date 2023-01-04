@@ -1,5 +1,6 @@
 import random
 import math
+from numpy import true_divide
 import pgzrun
 
 
@@ -7,6 +8,7 @@ import pgzrun
 WIDTH = 600
 HEIGHT = 400
 
+RED = 255, 0, 0
 BLUE = 24, 123, 205
 BLACK = 0, 0, 0
 GREEN = 77, 104, 33
@@ -14,16 +16,30 @@ BACKGROUND_COLOR = 119, 198, 110
 
 UNIT_SIZE = 10
 
-BORDER_TOP = Rect((0, 0), (WIDTH, UNIT_SIZE))
+BORDER_TOP = Rect((0, 0), (WIDTH, UNIT_SIZE + 20))
 BORDER_LEFT = Rect((0, 0), (UNIT_SIZE, HEIGHT))
 BORDER_BOTTOM = Rect((0, HEIGHT - UNIT_SIZE), (WIDTH, UNIT_SIZE))
 BORDER_RIGHT = Rect((590, 0), (10, 400))
 
+# functions
+def random_food(x_avoid = 0, y_avoid = 0):
+
+    while True:
+        x_food = math.floor(random.randint(UNIT_SIZE, WIDTH - 2 * UNIT_SIZE) / UNIT_SIZE) * UNIT_SIZE
+        y_food = math.floor(random.randint(3 * UNIT_SIZE, HEIGHT - 2 * UNIT_SIZE) / UNIT_SIZE) * UNIT_SIZE
+
+        if (x_avoid == 0 and y_avoid == 0) or (x_avoid != x_food or y_avoid != y_food) :
+            return (x_food, y_food)
+
 
 # Global variables
-x = math.floor(random.randint(WIDTH / 5, 4 * WIDTH / 5) / UNIT_SIZE) * UNIT_SIZE
-y = math.floor(random.randint(HEIGHT / 5, 4 * HEIGHT / 5) / UNIT_SIZE) * UNIT_SIZE
+x_snake = math.floor(random.randint(WIDTH / 5, 4 * WIDTH / 5) / UNIT_SIZE) * UNIT_SIZE
+y_snake = math.floor(random.randint(HEIGHT / 5, 4 * HEIGHT / 5) / UNIT_SIZE) * UNIT_SIZE
 
+x_food, y_food = random_food()
+print("Food at: ", x_food, y_food)
+
+score = 0
 
 def draw():
     # Fill background
@@ -36,23 +52,54 @@ def draw():
     screen.draw.filled_rect(BORDER_RIGHT, GREEN)
 
     # Draw snake (1 square for now)
-    patrat = Rect((x, y), (UNIT_SIZE, UNIT_SIZE))
-    screen.draw.filled_rect(patrat, BLUE)
-    screen.draw.rect(patrat, BLACK)
+    snake = Rect((x_snake, y_snake), (UNIT_SIZE, UNIT_SIZE))
+    screen.draw.filled_rect(snake, BLUE)
+    screen.draw.rect(snake, BLACK)
+
+    #draw food
+    food = Rect((x_food, y_food), (UNIT_SIZE, UNIT_SIZE))
+    screen.draw.filled_rect(food, RED)
+    
+    #draw score
+    screen.draw.text("Score: " + str(score), (0, UNIT_SIZE))
 
 
 def update() :
-    global y
-    global x
+    global y_snake
+    global x_snake
+    global x_food
+    global y_food
+    global score
 
     if  keyboard.up :
-        y = y - UNIT_SIZE
+        y_snake = y_snake - UNIT_SIZE
+        if y_snake <= UNIT_SIZE + 20 :
+            y_snake = UNIT_SIZE + 20
     elif keyboard.down :
-        y = y + UNIT_SIZE
+        y_snake = y_snake + UNIT_SIZE
+        if y_snake >= HEIGHT - 2 * UNIT_SIZE :
+            y_snake = HEIGHT - 2 * UNIT_SIZE
     elif keyboard.left:
-        x = x - UNIT_SIZE
+        x_snake = x_snake - UNIT_SIZE
+        if x_snake <= UNIT_SIZE:
+            x_snake = UNIT_SIZE
     elif keyboard.right :
-        x = x + UNIT_SIZE  
-
+        x_snake = x_snake + UNIT_SIZE
+        if x_snake >= WIDTH - 2 * UNIT_SIZE:
+            x_snake = WIDTH - 2 * UNIT_SIZE 
+    if x_snake == x_food and y_snake == y_food : 
+        score = score + 1
+        x_food, y_food = random_food(x_snake, y_snake)
+        print("New food at: ", x_food, y_food)
 
 pgzrun.go()
+
+
+
+# de morgan law
+# p = True
+# q = False
+
+# (p and q) == not (p or q)
+# (p or q) == not (p and q)
+
