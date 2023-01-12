@@ -21,58 +21,67 @@ BORDER_BOTTOM = Rect((0, HEIGHT - UNIT_SIZE), (WIDTH, UNIT_SIZE))
 BORDER_RIGHT = Rect((590, 0), (10, 400))
 
 # functions
-def random_food(x_avoid = 0, y_avoid = 0):
+def random_food(avoidList):
 
     while True:
         x_food = math.floor(random.randint(UNIT_SIZE, WIDTH - 2 * UNIT_SIZE) / UNIT_SIZE) * UNIT_SIZE
         y_food = math.floor(random.randint(3 * UNIT_SIZE, HEIGHT - 2 * UNIT_SIZE) / UNIT_SIZE) * UNIT_SIZE
 
-        if (x_avoid == 0 and y_avoid == 0) or (x_avoid != x_food or y_avoid != y_food) :
+        #if (x_avoid == 0 and y_avoid == 0) or (x_avoid != x_food or y_avoid != y_food) :
+        if not ((x_food, y_food) in snake) :
             return (x_food, y_food)
 
 
 # Global variables
-x_snake = math.floor(random.randint(WIDTH / 5, 4 * WIDTH / 5) / UNIT_SIZE) * UNIT_SIZE
-y_snake = math.floor(random.randint(HEIGHT / 5, 4 * HEIGHT / 5) / UNIT_SIZE) * UNIT_SIZE
+snake = [(math.floor(random.randint(WIDTH / 5, 4 * WIDTH / 5) / UNIT_SIZE) * UNIT_SIZE, math.floor(random.randint(HEIGHT / 5, 4 * HEIGHT / 5) / UNIT_SIZE) * UNIT_SIZE)]
 
-x_food, y_food = random_food()
-print("Food at: ", x_food, y_food)
+xFood, yFood = random_food(snake)
+print("Food at: ", xFood, yFood)
 
 score = 0
-x_speed = 0 
-y_speed = 0
+xSpeed = 0 
+ySpeed = 0
+gameSpeed = 0.3
+gameOver = False;
 
 
 def updateStateOnClock():
-    global x_snake
-    global y_snake
-    global x_food, y_food, score
+    global snake
+    global xFood, yFood, score
+    global gameOver
 
-    x_snake = x_snake + x_speed * UNIT_SIZE
-    y_snake = y_snake + y_speed * UNIT_SIZE
+    if gameOver :
+        return
 
-    if y_snake <= UNIT_SIZE + 20 : # check this out! why 20 code review
-        y_snake = UNIT_SIZE + 20
+    x_head = snake[0][0]
+    y_head = snake[0][1]
 
-    if y_snake >= HEIGHT - 2 * UNIT_SIZE :
-        y_snake = HEIGHT - 2 * UNIT_SIZE
+    x_newHead = x_head + xSpeed * UNIT_SIZE
+    y_newHead = y_head + ySpeed * UNIT_SIZE
 
-    if x_snake <= UNIT_SIZE:
-        x_snake = UNIT_SIZE
+    snake.insert(0, (x_newHead, y_newHead))
 
-    if x_snake >= WIDTH - 2 * UNIT_SIZE :
-        x_snake = WIDTH - 2 * UNIT_SIZE
-
-    if x_snake == x_food and y_snake == y_food : 
+    if x_newHead == xFood and y_newHead == yFood : 
         score = score + 1
-        x_food, y_food = random_food(x_snake, y_snake)
-        print("New food at: ", x_food, y_food)
+        xFood, yFood = random_food(snake)
+        print("New food at: ", xFood, yFood)
+    else :
+        snake.pop()
+
+    # check if the new head is out of bounds. In this case stop the game.
+    if y_newHead <= UNIT_SIZE + 20 or \
+        y_newHead >= HEIGHT - 2 * UNIT_SIZE or \
+        x_newHead <= UNIT_SIZE or \
+        x_newHead >= WIDTH - 2 * UNIT_SIZE :
+        gameOver = True; # TODO: display game over or something and allow re-play
 
     return
 
-clock.schedule_interval(updateStateOnClock, 0.1)
+clock.schedule_interval(updateStateOnClock, gameSpeed)
 
 def draw():
+    global snake
+    
     # Fill background
     screen.fill(BACKGROUND_COLOR)
 
@@ -82,13 +91,14 @@ def draw():
     screen.draw.filled_rect(BORDER_BOTTOM, GREEN) 
     screen.draw.filled_rect(BORDER_RIGHT, GREEN)
 
-    # Draw snake (1 square for now)
-    snake = Rect((x_snake, y_snake), (UNIT_SIZE, UNIT_SIZE))
-    screen.draw.filled_rect(snake, BLUE)
-    screen.draw.rect(snake, BLACK)
+    # Draw snake
+    for s in snake :
+        r = Rect((s[0], s[1]), (UNIT_SIZE, UNIT_SIZE))
+        screen.draw.filled_rect(r, BLUE)
+        screen.draw.rect(r, BLACK)
 
     #draw food
-    food = Rect((x_food, y_food), (UNIT_SIZE, UNIT_SIZE))
+    food = Rect((xFood, yFood), (UNIT_SIZE, UNIT_SIZE))
     screen.draw.filled_rect(food, RED)
     
     #draw score
@@ -96,26 +106,24 @@ def draw():
 
 
 def update() :
-    global y_snake
-    global x_snake
-    global x_food
-    global y_food
+    global xFood
+    global yFood
     global score
-    global x_speed
-    global y_speed
+    global xSpeed
+    global ySpeed
 
     if keyboard.up :
-        x_speed = 0
-        y_speed = -1
+        xSpeed = 0
+        ySpeed = -1
     elif keyboard.down :
-        x_speed = 0
-        y_speed = 1
+        xSpeed = 0
+        ySpeed = 1
     elif keyboard.left:
-        x_speed = -1
-        y_speed = 0
+        xSpeed = -1
+        ySpeed = 0
     elif keyboard.right :
-        x_speed = 1
-        y_speed = 0
+        xSpeed = 1
+        ySpeed = 0
 
 pgzrun.go()
 
