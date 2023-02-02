@@ -11,14 +11,15 @@ RED = 255, 0, 0
 BLUE = 24, 123, 205
 BLACK = 0, 0, 0
 GREEN = 77, 104, 33
-BACKGROUND_COLOR = 119, 198, 110
+GRAY = 162, 209, 73
+BACKGROUND_COLOR = 170, 215, 81
 
-UNIT_SIZE = 10
+UNIT_SIZE = 20
 
-BORDER_TOP = Rect((0, 0), (WIDTH, UNIT_SIZE + 20))
+BORDER_TOP = Rect((0, 0), (WIDTH, UNIT_SIZE * 2))
 BORDER_LEFT = Rect((0, 0), (UNIT_SIZE, HEIGHT))
 BORDER_BOTTOM = Rect((0, HEIGHT - UNIT_SIZE), (WIDTH, UNIT_SIZE))
-BORDER_RIGHT = Rect((590, 0), (10, 400))
+BORDER_RIGHT = Rect((WIDTH - UNIT_SIZE, 0), (UNIT_SIZE, HEIGHT))
 
 # functions
 def random_food(avoidList):
@@ -53,15 +54,15 @@ def updateStateOnClock():
     if gameOver :
         return
 
-    x_head = snake[0][0]
-    y_head = snake[0][1]
+    xHead = snake[0][0]
+    yHead = snake[0][1]
 
-    x_newHead = x_head + xSpeed * UNIT_SIZE
-    y_newHead = y_head + ySpeed * UNIT_SIZE
+    xNewHead = xHead + xSpeed * UNIT_SIZE
+    yNewHead = yHead + ySpeed * UNIT_SIZE
 
-    snake.insert(0, (x_newHead, y_newHead))
+    snake.insert(0, (xNewHead, yNewHead))
 
-    if x_newHead == xFood and y_newHead == yFood : 
+    if xNewHead == xFood and yNewHead == yFood : 
         score = score + 1
         xFood, yFood = random_food(snake)
         print("New food at: ", xFood, yFood)
@@ -69,20 +70,18 @@ def updateStateOnClock():
         snake.pop()
 
     # check if the new head is out of bounds. In this case stop the game.
-    if y_newHead <= UNIT_SIZE + 20 or \
-        y_newHead >= HEIGHT - 2 * UNIT_SIZE or \
-        x_newHead <= UNIT_SIZE or \
-        x_newHead >= WIDTH - 2 * UNIT_SIZE :
+    if yNewHead <= UNIT_SIZE + 20 or \
+        yNewHead >= HEIGHT - 2 * UNIT_SIZE or \
+        xNewHead <= UNIT_SIZE or \
+        xNewHead >= WIDTH - 2 * UNIT_SIZE :
         gameOver = True; # TODO: display game over or something and allow re-play
 
     return
 
 clock.schedule_interval(updateStateOnClock, gameSpeed)
 
-def draw():
-    global snake
-    
-    # Fill background
+
+def drawBackground():
     screen.fill(BACKGROUND_COLOR)
 
     # Draw borders
@@ -90,6 +89,25 @@ def draw():
     screen.draw.filled_rect(BORDER_LEFT, GREEN)
     screen.draw.filled_rect(BORDER_BOTTOM, GREEN) 
     screen.draw.filled_rect(BORDER_RIGHT, GREEN)
+
+    lines = HEIGHT // UNIT_SIZE - 3
+    columns = WIDTH // UNIT_SIZE - 2
+
+    for line in range(0, lines) :
+        for col in range(0, columns, 2) :
+            x = (col + 1 + line % 2) * UNIT_SIZE
+            y = (line + 2) * UNIT_SIZE
+            r = Rect((x, y), (UNIT_SIZE, UNIT_SIZE))
+            screen.draw.filled_rect(r, GRAY)
+
+    #for line in xrange() :
+
+
+def draw():
+    global snake
+    
+    # Fill background
+    drawBackground()
 
     # Draw snake
     for s in snake :
@@ -112,16 +130,17 @@ def update() :
     global xSpeed
     global ySpeed
 
-    if keyboard.up :
+    # TODO: do not allow to change direction from left <-> rigt and up <-> down (ignore these transitions)
+    if keyboard.up and ySpeed != 1 :
         xSpeed = 0
         ySpeed = -1
-    elif keyboard.down :
+    elif keyboard.down and ySpeed != -1:
         xSpeed = 0
         ySpeed = 1
-    elif keyboard.left:
+    elif keyboard.left and xSpeed != 1:
         xSpeed = -1
         ySpeed = 0
-    elif keyboard.right :
+    elif keyboard.right and xSpeed != -1:
         xSpeed = 1
         ySpeed = 0
 
